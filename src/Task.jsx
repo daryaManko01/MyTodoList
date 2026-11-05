@@ -1,28 +1,41 @@
-import {useContext, useState} from "react";
+import {useContext, useState, useRef, useEffect} from "react";
 import {TasksContext} from "./contexts/TasksContext.jsx";
 
 const Task = ({task}) => {
 
-    const {tasks,  setTasks} = useContext(TasksContext)
+    //Retrieve ready-to-use action functions from the context
+    const {toggleDone, toggleFavorite, deleteTask, editTask} = useContext(TasksContext)
 
-    function favoriteTask(index) {
-        let newTasks = tasks.map(t =>
-            t.name === index.name
-                ? { ...t, isFavorite: !t.isFavorite }
-                : t
-        )
+    const [isEditing, setIsEditing] = useState(false);
+    const [editText, setEditText] = useState(task.name);
+    const editInputRef = useRef(null);
 
-        setTasks(newTasks);
+    //Autofocus the input when editing begins
+    useEffect(() => {
+        if (isEditing && editInputRef.current) {
+            editInputRef.current.focus();
+        }
+    }, [isEditing]);
+
+    //Function for saving the edited text
+    function saveEdit() {
+        const trimmed = editText.trim();
+        if (!trimmed) {
+            deleteTask(task.id); //If the text was completely erased, delete the task by ID
+            return;
+        }
+        editTask(task.id, trimmed); //Working by ID
+        setIsEditing(false);
     }
 
-    function doneTask(index) {
-        let doneTask = tasks.map(a =>
-            a.name === index.name
-                ? { ...a, done: !a.done }
-                : a
-        )
 
-        setTasks(doneTask);
+    //Handler for saving upon pressing Enter
+    function handleKeyDown(e) {
+        if (e.key === "Enter") saveEdit();
+        if (e.key === "Escape") {
+            setEditText(task.name); //Cancel changes
+            setIsEditing(false);
+        }
     }
 
     return (
@@ -33,23 +46,48 @@ const Task = ({task}) => {
                         className="button_radius_2"
                         type="checkbox"
                         checked={task.done}
-                        onChange={() => doneTask(task)}
-                    >
-                    </input>
+                        onChange={() => toggleDone(task.id)}
+                    />
                     <div className="text_plan">
-                        <span className="main_text color_text">{task.name}</span>
+
+                        {isEditing ? (
+                            <input
+                                ref={editInputRef}
+                                type="text"
+                                className="input"
+                                value={editText}
+                                onChange={(e) => setEditText(e.target.value)}
+                                onBlur={saveEdit}
+                                onKeyDown={handleKeyDown}
+                            />
+                        ) : (
+                            <span className="main_text color_text">{task.name}</span>
+                        )}
                     </div>
                 </div>
-                <div>
+                <div className="button_radius_main">
                     <button
                         className="button_radius"
-                        onClick={() => favoriteTask(task)}
+                        onClick={() => isEditing ? saveEdit() : setIsEditing(true)}
+                    >
+                        {isEditing ? "💾" : "✏️"}
+                    </button>
 
+                    <button
+                        className="button_radius"
+                        onClick={() => toggleFavorite(task.id)}
                     >
                         {!task.isFavorite
-                            ? <img src="src/src/star_1.svg" />
-                            : <img src="src/src/star_2.svg" />
+                            ? <img src="src/src/star_1.svg"/>
+                            : <img src="src/src/star_2.svg"/>
                         }
+                    </button>
+
+                    <button
+                        className="button_radius"
+                        onClick={() => deleteTask(task.id)}
+                    >
+                        🗑️
                     </button>
                 </div>
             </div>

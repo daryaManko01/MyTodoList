@@ -3,42 +3,44 @@ import {TasksContext} from "./contexts/TasksContext.jsx";
 
 const AddTask = () => {
 
-    const {tasks, setTasks} = useContext(TasksContext)
-
-    //const [value, setValue] = useState("");
-
+    const {addTask} = useContext(TasksContext)
     const input = useRef(null);
 
-    function addNewTask() {
+    function addNewTask(e) {
 
+        if (e) e.preventDefault(); //Added e (event) to prevent the page from reloading when the form is submitted via the Enter key
         const inputValue = input.current
 
-        const newTask = {
-            id: Date.now(),
-            name: inputValue.value,
-            done: false,
-            isFavorite: false
-        };
+        //Trim whitespace from the edges
+        const trimmedValue = inputValue.value.trim();
 
-        setTasks([
-            ...tasks,
-            newTask
-        ]);
+        //Check that the string is not empty after removing whitespace
+        if (!trimmedValue) {
+            return;
+        }
 
+        //Invoking a pre-defined centralized action
+        addTask(trimmedValue);
         inputValue.value = "";
-        //setValue("");
-
     }
 
     return (
         <>
             <div className="bg">
-                <div className="icon_main">
+                <form className="icon_main" onSubmit={addNewTask}>
+
+                    <label htmlFor="newTaskName" className="visually-hidden">
+                        Текст новой задачи
+                    </label>
+
                     <button
+                        type="submit"
                         id="addNewTaskButton"
                         className="button"
                         onClick={addNewTask}
-                    ><img src="src/src/plus.svg"/>
+                        aria-label="Добавить задачу"
+
+                    ><img src="src/src/plus.svg" alt="" aria-hidden="true"/>
                     </button>
 
                     <input
@@ -50,7 +52,7 @@ const AddTask = () => {
                         ref={input}
 
                     />
-                </div>
+                </form>
             </div>
         </>
     )

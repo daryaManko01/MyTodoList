@@ -10,12 +10,25 @@ export const TasksProvider = (props) => {
 
    const {
        tasks,
-       setTasks
+       setTasks,
+       addTask,
+       toggleDone,
+       toggleFavorite,
+       deleteTask,
+       editTask
    } = useTasks()
 
 
     return (
-        <TasksContext.Provider value={{tasks, setTasks}}>
+        <TasksContext.Provider value={{
+            tasks,
+            setTasks,
+            addTask,
+            toggleDone,
+            toggleFavorite,
+            deleteTask,
+            editTask
+        }}>
             {children}
         </TasksContext.Provider>
     )
